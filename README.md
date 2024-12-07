@@ -19,19 +19,19 @@ Running from source:
 git clone https://github.com/jonathanfox5/lemma_from_wiki
 cd lemma_from_wiki
 uv sync
-uv run lemma_from_wiki -l "language code" -n "number of articles to process"
+uv run lemmafromwiki -l "language code" -n "number of articles to process"
 ```
 
 Getting help:
 
 ```sh
-uv run lemma_from_wiki --help
+uv run lemmafromwiki --help
 ```
 
 Or just :
 
 ```sh
-uv run lemma_from_wiki
+uv run lemmafromwiki
 ```
 
 ## Pypi
