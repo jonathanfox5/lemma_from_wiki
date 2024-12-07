@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 Gets a wikipedia dump for a language and creates a lemma table from it for use in [vocabsieve](https://github.com/FreeLanguageTools/vocabsieve/).
 
@@ -7,13 +7,13 @@ Project is AGPL3+ licensed as it re-uses code from [gogadget](https://gogadget.j
 Needs CUDA toolkit installed and an NVIDIA GPU available: <https://developer.nvidia.com/cuda-toolkit-archive>
 On Windows, you will need to install Visual Studio first. I also needed to manually add the following to my PATH: `C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64`
 
-# Running
+## Running
 
 Assumes `uv` but will work equally well with a pip venv.
 
 No need to download anything apart from this repository. The script will automatically grab the wikipedia articles for your chosen language.
 
-Running:
+Running from source:
 
 ```sh
 git clone https://github.com/jonathanfox5/lemma_from_wiki
@@ -33,3 +33,7 @@ Or just :
 ```sh
 uv run lemma_from_wiki
 ```
+
+## Pypi
+
+Note that you can install it from pypi too: <https://pypi.org/project/lemma-from-wiki/>
