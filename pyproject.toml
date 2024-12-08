@@ -1,6 +1,6 @@
 [project]
 name = "lemma-from-wiki"
-version = "0.1.0"
+version = "0.2.0"
 description = "Generates lemma files for vocabsieve"
 readme = "README.md"
 authors = [
