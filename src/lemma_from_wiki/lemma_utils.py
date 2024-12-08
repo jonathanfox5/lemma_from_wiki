@@ -15,15 +15,23 @@ def lemma_dummy(language: str) -> None:
     lt.lemmatize_sentence("Wololo")
 
 
-def language_supported(language: str) -> bool:
-    """Check if the language is supported.
+def language_supported_spacy(language: str) -> bool:
+    """Check if the language is supported by spacy.
     LemonTizer has its own function that is more accurate but this works offline."""
 
     supported = language in SupportedLanguages.spacy_languages.keys()
     return supported
 
 
+def language_supported_simplemma(language: str) -> bool:
+    """Check if the language is supported by simplemma."""
+
+    supported = language in SupportedLanguages.simplemma_languages.keys()
+    return supported
+
+
 def force_gpu():
+    """Force spacy to use the GPU"""
     import spacy
 
     spacy.require_gpu()

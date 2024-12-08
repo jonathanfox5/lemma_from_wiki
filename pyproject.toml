@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Jonathan Fox", email = "32023524+jonathanfox5@users.noreply.github.com" }
 ]
-# Niche package, only tested on 3.12. 3.13 is not currently compatible.
+# Only tested on 3.12. 3.13 is not currently compatible.
 requires-python = "<3.13,>=3.12"
 dependencies = [
     # Direct dependencies. Make sure that we always stay on the current major version
@@ -14,14 +14,15 @@ dependencies = [
     "lemon-tizer<1.0.0,>=0.0.7",
     "pandas<3.0.0,>=2.2.3",
     "datasets<4.0.0,>=3.1.0",
+    "regex>=2024.11.6",
+    "simplemma<2.0.0,>=1.1.2",
 
     # Get the cuda version of spacy
     "spacy[cuda12x]==3.7.5", # 3.8 has a Windows memory bug
-    
+
     # Compatibility
     "numpy<2", # Numpy 2 breaks spacy 3.7, not listed in their dependencies # Required for installing language models within the venv
     "pip",
-    "regex>=2024.11.6",
 ]
 classifiers = [
     "Intended Audience :: Developers",

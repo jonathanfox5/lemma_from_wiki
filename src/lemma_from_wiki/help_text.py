@@ -10,6 +10,7 @@ class HelpText:
     generate = "Generate a vocabsieve compatible lemmatiser list"
     use_cuda = "You can specify --gpu if you have a CUDA enabled Nvidia graphics card to significantly speed up the processing."
     max_articles = "The maximum number of wikipedia articles to process."
+    show_diff = "Pass --all to include results for every word or --diff to show only the lines where spacy / simplemma disagree on the lemma to be used"
 
 
 class SupportedLanguages:
@@ -129,6 +130,58 @@ class SupportedLanguages:
         "tr": "Turkish",
         "uk": "Ukrainian",
         "ur": "Urdu",
+    }
+
+    simplemma_languages = {
+        "ast": "Asturian",
+        "bg": "Bulgarian",
+        "ca": "Catalan",
+        "cs": "Czech",
+        "cy": "Welsh",
+        "da": "Danish",
+        "de": "German",
+        "el": "Greek",
+        "en": "English",
+        "enm": "Middle English",
+        "es": "Spanish",
+        "et": "Estonian",
+        "fa": "Persian",
+        "fi": "Finnish",
+        "fr": "French",
+        "ga": "Irish",
+        "gd": "Gaelic",
+        "gl": "Galician",
+        "gv": "Manx",
+        "hbs": "Serbo-Croatian",
+        "hi": "Hindi",
+        "hu": "Hungarian",
+        "hy": "Armenian",
+        "id": "Indonesian",
+        "is": "Icelandic",
+        "it": "Italian",
+        "ka": "Georgian",
+        "la": "Latin",
+        "lb": "Luxembourgish",
+        "lt": "Lithuanian",
+        "lv": "Latvian",
+        "mk": "Macedonian",
+        "ms": "Malay",
+        "nb": "Norwegian (Bokmål)",
+        "nl": "Dutch",
+        "nn": "Norwegian (Nynorsk)",
+        "pl": "Polish",
+        "pt": "Portuguese",
+        "ro": "Romanian",
+        "ru": "Russian",
+        "se": "Northern Sámi",
+        "sk": "Slovak",
+        "sl": "Slovene",
+        "sq": "Albanian",
+        "sv": "Swedish",
+        "sw": "Swahili",
+        "tl": "Tagalog",
+        "tr": "Turkish",
+        "uk": "Ukrainian",
     }
 
     @staticmethod

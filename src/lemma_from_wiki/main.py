@@ -7,7 +7,6 @@ import typer
 from typing_extensions import Annotated
 
 from .cli_utils import CliUtils
-from .generate_lemma_file import generate_lemma_file
 from .help_text import HelpText
 
 """
@@ -50,5 +49,17 @@ def generate(
             "--gpu/--cpu", "-g/-c", help=HelpText.use_cuda, rich_help_panel="Optional Flags"
         ),
     ] = True,
+    show_diff: Annotated[
+        bool,
+        typer.Option(
+            "--diff/--all", "-d/-a", help=HelpText.show_diff, rich_help_panel="Optional Flags"
+        ),
+    ] = False,
 ):
-    generate_lemma_file(language=language, use_gpu=gpu, max_articles=max_articles)
+    CliUtils.print_status("Loading")
+    # Load this here so that it doesn't slow down the rest of the cli interface
+    from .generate_lemma_file import generate_lemma_file
+
+    generate_lemma_file(
+        language=language, use_gpu=gpu, max_articles=max_articles, show_diff=show_diff
+    )

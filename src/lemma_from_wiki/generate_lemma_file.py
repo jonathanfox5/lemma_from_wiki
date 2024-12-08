@@ -6,6 +6,7 @@ __uses_code_from__ = ["https://github.com/jonathanfox5/gogadget"]
 
 import pandas as pd
 import regex as re
+import simplemma
 from datasets import load_dataset as load_hf_dataset
 from datasets.iterable_dataset import IterableDataset
 from lemon_tizer import LemonTizer
@@ -13,10 +14,12 @@ from rich.progress import track
 
 from .cli_utils import CliUtils
 from .config import Config
-from .lemma_utils import force_gpu, language_supported_spacy
+from .lemma_utils import force_gpu, language_supported_simplemma, language_supported_spacy
 
 
-def generate_lemma_file(language: str, use_gpu: bool, max_articles: int, lemma_mode: bool):
+def generate_lemma_file(language: str, use_gpu: bool, max_articles: int, show_diff: bool):
+    """Build a lemmatization file compatible with vocabsieve"""
+
     # Configure lemmatiser settings and get lemmatiser object back
     CliUtils.print_status("Initialising lemmatiser")
 
@@ -41,15 +44,54 @@ def generate_lemma_file(language: str, use_gpu: bool, max_articles: int, lemma_m
 
     # Do the actual work of lemmatising the articles and doing a frequency analysis
     CliUtils.print_status("Lemmatising")
-    df = pd.DataFrame(columns=["word", "lemma", "simplemma", "frequency"])
-    lemma_table = build_lemma_table(df=df, lt=lt, datastream=datastream, max_articles=max_articles)
+    lemma_table = pd.DataFrame(columns=["word", "lemma", "simplemma", "frequency"])
+    lemma_table = build_lemma_table(
+        df=lemma_table, lt=lt, datastream=datastream, max_articles=max_articles
+    )
 
-    # CliUtils.print_status("Comparing to simplemma")
-    # lemma_table = compare_to_simplemma(df=df)
+    # Get the simplemma lemma and, if `show_diff`, filter only to the rows that are different
+    CliUtils.print_status("Comparing to simplemma")
+    lemma_table = get_simplemma_lemmas(df=lemma_table, language=language)
+
+    if show_diff:
+        lemma_table = include_only_differences(df=lemma_table)
 
     # Save to csv
     CliUtils.print_status("Saving")
-    lemma_table.to_csv(f"{Config.output_stem}_{language}_{max_articles}.csv", index=False)
+    lemma_table.to_csv(
+        path_or_buf=f"{Config.output_stem}_{language}_{max_articles}_{"_diff" if show_diff else "_all"}.csv",
+        index=False,
+    )
+
+
+def include_only_differences(df: pd.DataFrame) -> pd.DataFrame:
+    """Return only the rows where the spacy result and simplemma result do not agree"""
+    df = df[df["lemma"] != df["simplemma"]]
+    return df
+
+
+def get_simplemma_lemmas(df: pd.DataFrame, language: str) -> pd.DataFrame:
+    """Calculate the simplemma lemma for each row of a dataframe"""
+
+    # Check language is supported by simplemma
+    if not language_supported_simplemma(language=language):
+        CliUtils.print_warning(f"{language=} not supported by simplemma, cannot do comparison")
+        return df
+
+    # Get simplemma value for each word
+    df["simplemma"] = df["word"].apply(lambda word: simplemma_lemma_word(word=word, lang=language))
+
+    return df
+
+
+def simplemma_lemma_word(word: str, lang: str) -> str:
+    """Lemmatise using simplemma and clean up the output"""
+
+    lemma = simplemma.lemmatize(token=word, lang=lang)
+    lemma = lemma.lower()
+    lemma = remove_nonalpha(lemma)
+
+    return lemma
 
 
 def build_lemma_table(
@@ -59,7 +101,7 @@ def build_lemma_table(
     max_articles: int,
     remove_duplicates: bool = True,
 ) -> pd.DataFrame:
-    """Loop through articles in the datastream"""
+    """Loop through articles in the datastream, get the spacy lemma and remove duplicates based upon frequency"""
 
     # Process each article
     for data in track(datastream, description="Processing articles", total=max_articles):
