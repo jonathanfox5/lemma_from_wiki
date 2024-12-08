@@ -13,10 +13,10 @@ from rich.progress import track
 
 from .cli_utils import CliUtils
 from .config import Config
-from .lemmatiser import force_gpu, language_supported
+from .lemma_utils import force_gpu, language_supported_spacy
 
 
-def generate_lemma_file(language: str, use_gpu: bool, max_articles: int):
+def generate_lemma_file(language: str, use_gpu: bool, max_articles: int, lemma_mode: bool):
     # Configure lemmatiser settings and get lemmatiser object back
     CliUtils.print_status("Initialising lemmatiser")
 
@@ -41,7 +41,11 @@ def generate_lemma_file(language: str, use_gpu: bool, max_articles: int):
 
     # Do the actual work of lemmatising the articles and doing a frequency analysis
     CliUtils.print_status("Lemmatising")
-    lemma_table = build_lemma_table(lt=lt, datastream=datastream, max_articles=max_articles)
+    df = pd.DataFrame(columns=["word", "lemma", "simplemma", "frequency"])
+    lemma_table = build_lemma_table(df=df, lt=lt, datastream=datastream, max_articles=max_articles)
+
+    # CliUtils.print_status("Comparing to simplemma")
+    # lemma_table = compare_to_simplemma(df=df)
 
     # Save to csv
     CliUtils.print_status("Saving")
@@ -49,19 +53,26 @@ def generate_lemma_file(language: str, use_gpu: bool, max_articles: int):
 
 
 def build_lemma_table(
-    lt: LemonTizer, datastream: IterableDataset, max_articles: int
+    df: pd.DataFrame,
+    lt: LemonTizer,
+    datastream: IterableDataset,
+    max_articles: int,
+    remove_duplicates: bool = True,
 ) -> pd.DataFrame:
     """Loop through articles in the datastream"""
 
     # Process each article
-    df = pd.DataFrame(columns=["word", "lemma", "count"])
     for data in track(datastream, description="Processing articles", total=max_articles):
         text_input = data.get("text")
         lemma_list = lt.lemmatize_sentence(text_input)
         df = count_lemmas(df=df, lemma_list=lemma_list)
 
-    # Sort the final dataframe
-    df = df.sort_values(["word", "count"], ascending=[True, False])
+    # Sort the df
+    df = df.sort_values(["word", "frequency"], ascending=[True, False])
+
+    # If a word has multiple lemmas, only keep the first
+    if remove_duplicates:
+        df = df.drop_duplicates("word", keep="first")
 
     return df
 
@@ -82,9 +93,9 @@ def count_lemmas(df: pd.DataFrame, lemma_list: list[dict[str, str]]) -> pd.DataF
             match = df[(df["word"] == word) & (df["lemma"] == lemma)]
 
             if not match.empty:
-                df.loc[match.index, "count"] += 1
+                df.loc[match.index, "frequency"] += 1
             else:
-                new_row = pd.DataFrame([{"word": word, "lemma": lemma, "count": 1}])
+                new_row = pd.DataFrame([{"word": word, "lemma": lemma, "frequency": 1}])
 
                 df = pd.concat([df, new_row], ignore_index=True)
 
@@ -116,7 +127,7 @@ def lemma_test(lt: LemonTizer) -> dict[str, str]:
 
 def lemma_config(language: str, use_gpu: bool) -> LemonTizer | None:
     """Configure the lemmatiser behaviour"""
-    if not language_supported(language):
+    if not language_supported_spacy(language):
         CliUtils.print_error(
             f"Language {language} is not currently supported by the lemmatiser so cannot generate files."
         )
